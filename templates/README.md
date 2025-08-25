@@ -1,0 +1,2 @@
+# Templates
+Essa pasta contém códigos prontos do professor / que peguei da internet. Nada do que eu coloquei nessa pasta foi eu quem fiz. Tudo eu aqui coloquei apenas para unir os códigos que eu estudei em um só lugar
