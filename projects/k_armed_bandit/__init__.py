@@ -140,4 +140,4 @@ class Project(ProjectAbstractClass):
 
         plt.grid()
 
-        plt.show()
+        plt.savefig(os.path.join(os.getcwd(), 'k_armed_bandit', 'images', 'graph.png'))
