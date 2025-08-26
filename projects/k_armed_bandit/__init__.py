@@ -2,6 +2,9 @@ import numpy as np
 from yaspin import yaspin
 import threading
 import utils
+import os
+import matplotlib.pyplot as plt
+import seaborn as sns
 
 from models import ProjectAbstractClass
 
@@ -14,15 +17,16 @@ class Agent:
 
         # The total reward the agent has
         self.total_reward = 0
+        self.avg_reward_record = [0]
 
         # This array contains the history of each action taken by the agent
         self.estimatives = [
-            0 for _ in range(actions_size)
+            2 for _ in range(actions_size)
         ]
 
         # How many times the i-th action was chosen
         self.steps = [
-            2 for _ in range(actions_size)
+            0 for _ in range(actions_size)
         ]
 
         # Number of actions the agent can take
@@ -44,13 +48,9 @@ class Agent:
         if explore:  # If it will explore
             # Then I select a random action
             action = np.random.randint(0, self.actions_number)
-            self.steps[action] += 1
-            return action
+        else:
+            action = np.argmax(self.estimatives)  # Return the maximum estimative
         
-        action = np.argmax(self.estimatives)  # Return the maximum estimative
-
-        self.steps[action] += 1
-
         return action
 
 
@@ -58,8 +58,14 @@ class Project(ProjectAbstractClass):
     def __init__(self):
         ACTIONS_NUMBER = 10
 
-        self.rewards = np.random.random_integers(-10, 10, ACTIONS_NUMBER)
+        self.rewards = [
+            [
+                ((10 + 10)*np.random.random_sample(1) - 10).item(),
+                1
+            ] for _ in range(ACTIONS_NUMBER)
+        ]
         # The actions are the array indexes
+        # Each array contains a Normal mean and its standart deviation
 
         self.agent = Agent(ACTIONS_NUMBER)
     
@@ -72,19 +78,24 @@ class Project(ProjectAbstractClass):
         Returns:
             int: The reward associeted with the passed action
         """
-        return self.rewards[action]
+        distribution_infos = self.rewards[action]
+        return np.random.normal(distribution_infos[0], distribution_infos[1], size=1).item()
     
     def train_agent(self):
         """Function responsible for the flowing of training the agent
         """
-        EPOCHS = 1000000
+        EPOCHS = 100000
         
         for _ in range(EPOCHS):
             chosen_action = self.agent.choose()
             
             reward = self.get_reward(chosen_action)
 
+            # self.agent.epsilon = max(self.agent.epsilon, 0.99 * self.agent.epsilon)
+            
             self.agent.total_reward += reward
+            self.agent.steps[chosen_action] += 1
+            self.agent.avg_reward_record.append(self.agent.total_reward/sum(self.agent.steps))
 
             self.agent.think(reward, chosen_action)
 
@@ -97,10 +108,10 @@ class Project(ProjectAbstractClass):
         print("K-ARMED BANDIT PROBLEM")
         print("="*30)
 
-        print("Os valores de cada ação são:")
+        print("The values of each action are (Mean and Standart Deviation):")
 
         for i, reward in enumerate(self.rewards):
-            print(f"Ação {i}: {reward}")
+            print(f"Action {i}: {reward}")
 
         with yaspin(text="Training model, please wait a bit...", color="cyan") as spinner:
             t = threading.Thread(target=self.train_agent)
@@ -110,9 +121,23 @@ class Project(ProjectAbstractClass):
 
         print("="*30)
 
-        print("Após treinamento, o agente chegou na conclusão:")
+        print("After the training, the estimatives the agent got were:")
         for i, reward in enumerate(self.agent.estimatives):
-            print(f"Ação {i}: {reward}")
+            print(f"Action {i}: {reward}")
 
         print("="*10)
-        print(f"A recompensa total obtida foi: {self.agent.total_reward}")
+        print(f"The total reward obtained was: {self.agent.total_reward}")
+
+        self.generate_graphs()
+
+    def generate_graphs(self):
+        plt.title("MODEL'S TOTAL REWARD GROWTH OVER TIME")
+
+        plt.xlabel("TIME")
+        plt.ylabel("TOTAL REWARD")
+
+        plt.plot([i for i in range(sum(self.agent.steps)+1)], self.agent.avg_reward_record)
+
+        plt.grid()
+
+        plt.show()
