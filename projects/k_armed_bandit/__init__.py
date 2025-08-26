@@ -58,16 +58,16 @@ class Project(ProjectAbstractClass):
     def __init__(self):
         ACTIONS_NUMBER = 10
 
+        mean = 0
+        std = 1
+
         self.rewards = [
-            [
-                ((10 + 10)*np.random.random_sample(1) - 10).item(),
-                1
-            ] for _ in range(ACTIONS_NUMBER)
+            np.random.normal(mean,std,1).item() for _ in range(ACTIONS_NUMBER)
         ]
         # The actions are the array indexes
         # Each array contains a Normal mean and its standart deviation
 
-        self.agent = Agent(ACTIONS_NUMBER)
+        self.agent = Agent(ACTIONS_NUMBER, .01)
     
     def get_reward(self, action: int):
         """Gets the reward desired for the given action
@@ -78,13 +78,12 @@ class Project(ProjectAbstractClass):
         Returns:
             int: The reward associeted with the passed action
         """
-        distribution_infos = self.rewards[action]
-        return np.random.normal(distribution_infos[0], distribution_infos[1], size=1).item()
+        return self.rewards[action]
     
     def train_agent(self):
         """Function responsible for the flowing of training the agent
         """
-        EPOCHS = 100000
+        EPOCHS = 1000
         
         for _ in range(EPOCHS):
             chosen_action = self.agent.choose()
