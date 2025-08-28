@@ -5,10 +5,11 @@ import utils
 import os
 import matplotlib.pyplot as plt
 import seaborn as sns
+import pandas as pd
 
 from models import ProjectAbstractClass
 
-from k_armed_bandit.agents import EpsilonGreedyAgent, UCBAgent
+from k_armed_bandit.agents import EpsilonGreedyAgent, UCBAgent, GradientAgent
 
 
 class Project(ProjectAbstractClass):
@@ -16,7 +17,7 @@ class Project(ProjectAbstractClass):
         ACTIONS_NUMBER = 10
 
         mean = 0
-        std = 1
+        std = 10
 
         self.rewards = [
             np.random.normal(mean,std,1).item() for _ in range(ACTIONS_NUMBER)
@@ -26,8 +27,11 @@ class Project(ProjectAbstractClass):
 
         self.agents = [
             EpsilonGreedyAgent(ACTIONS_NUMBER, .01),
-            UCBAgent(ACTIONS_NUMBER, .001)
+            UCBAgent(ACTIONS_NUMBER, .001),
+            GradientAgent(ACTIONS_NUMBER, .01)
         ]
+
+        self.EPOCHS = 100000
     
     def get_reward(self, action: int):
         """Gets the reward desired for the given action
@@ -43,9 +47,8 @@ class Project(ProjectAbstractClass):
     def train_agent(self):
         """Function responsible for the flowing of training the agent
         """
-        EPOCHS = 1000
         
-        for _ in range(EPOCHS):
+        for _ in range(self.EPOCHS):
             for agent in self.agents:
                 chosen_action = agent.choose()
             
@@ -80,16 +83,16 @@ class Project(ProjectAbstractClass):
         self.generate_graphs()
 
     def generate_graphs(self):
-        plt.title("MODEL'S TOTAL REWARD GROWTH OVER TIME")
+        
+        # AVERAGE REWARD GROWTH OVER TIME
+        plt.title("MODEL'S AVERAGE REWARD GROWTH OVER TIME")
 
         plt.xlabel("TIME")
         plt.ylabel("TOTAL REWARD")
         
         for agent in self.agents:
             plt.plot(
-                [
-                    i for i in range(sum(agent.steps)+1)
-                ],
+                agent.get_times(),
                 agent.avg_reward_record,
                 label=agent.name
             )
@@ -98,4 +101,28 @@ class Project(ProjectAbstractClass):
 
         plt.legend()
 
-        plt.savefig(os.path.join(os.getcwd(), 'k_armed_bandit', 'images', 'graph.png'))
+        plt.savefig(os.path.join(os.getcwd(), 'k_armed_bandit', 'images', 'models_average_reward_growth_over_time.png'))
+
+        plt.close()
+
+        # ACTIONS TAKEN HISTOGRAM
+        plt.title("ACTIONS TAKEN BY EACH AGENT")
+
+        df = pd.DataFrame()
+
+        final_names_column = []
+        final_actions_column = []
+        for agent in self.agents:
+            names_column = [agent.name]*self.EPOCHS
+            final_names_column += names_column
+
+            final_actions_column += agent.actions_record
+
+        df['AGENT'] = final_names_column
+        df["ACTIONS"] = final_actions_column
+
+        sns.countplot(df, x="AGENT", hue="ACTIONS", palette="bright")
+
+        plt.ylabel("COUNT")
+
+        plt.savefig(os.path.join(os.getcwd(), 'k_armed_bandit', 'images', 'actions_taken_by_each_agent.png'))
