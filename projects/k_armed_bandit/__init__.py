@@ -16,8 +16,8 @@ class Project(ProjectAbstractClass):
     def __init__(self):
         ACTIONS_NUMBER = 10
 
-        mean = 0
-        std = 10
+        mean = 5
+        std = 5
 
         self.rewards = [
             np.random.normal(mean,std,1).item() for _ in range(ACTIONS_NUMBER)
@@ -31,7 +31,7 @@ class Project(ProjectAbstractClass):
             GradientAgent(ACTIONS_NUMBER, .01)
         ]
 
-        self.EPOCHS = 100000
+        self.EPOCHS = 1000
     
     def get_reward(self, action: int):
         """Gets the reward desired for the given action

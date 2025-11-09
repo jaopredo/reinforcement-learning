@@ -138,3 +138,17 @@ Você consegue pensar em outras maneiras de melhorar o jogador de aprendizado po
 
 
 // ===========================================================
+
+#pagebreak()
+
+#align(center + horizon)[
+  = Multi-armed Bandits
+]
+
+#pagebreak()
+
+*Exercício 2.1* - Em uma seleção de ação $epsilon$-gananciosa, para o caso de duas ações e $epsilon = 0.5$, qual a probabilidade da ação gananciosa ser escolhida
+
+*Resolução*: _Eu tenho 2 ações possíveis, uma sendo a gananciosa $1$, que pode ser escolhida com probabilidade $PP(A_t=1)=alpha$ e a não-gananciosa $0$ ($PP(A_t=0)=1-alpha$). Meu algoritmo vai, então, primeiro escolher se irá ou não escolher a ação gananciosa diretamente. Se ele não a escolher (Probabilidade $epsilon$), então ele vai ter duas outras opções, então ele vai escolher a opção não-gananciosa com probabilidade $epsilon dot alpha$_
+
+
